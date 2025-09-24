@@ -51,8 +51,7 @@ export const Login = () => {
     <div
       className="min-vh-100 d-flex align-items-center justify-content-center"
       style={{
-        background:
-          "linear-gradient(135deg, rgba(13,110,253,0.08) 0%, rgba(32,201,151,0.08) 100%)"
+        background: "#ffffff"
       }}
     >
       <div className="container" style={{ maxWidth: 520 }}>

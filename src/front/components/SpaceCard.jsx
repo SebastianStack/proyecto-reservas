@@ -1,106 +1,177 @@
-import React from "react";
+﻿import React, { memo, useState, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import ImageURL from "../assets/img/no-photo.png";
+import FavoriteIcon from "./FavoriteIcon";
 
-import { FavoriteIcon } from "./FavoriteIcon";
-/**
- * @param {Object} props
- * @param {string[]} props.images
- * @param {string}   props.title
- * @param {string}   props.description
- * @param {string[]} props.chips
- * @param {string}   props.redirection
- * @param {string}   props.price
- * @param {React.ReactNode} props.children  // aquí puedes pasar <ReserveButton />
- */
 export const SpaceCard = ({
+  spaceId,
   images,
   title,
   description,
-  chips,
-  redirection,
   price,
   children,
-  id
+  onToggleFavorite,
+  initiallyFavorite = false,
+  redirection,
+  chips,
+  wifi,
+  parking,
+  air_conditioning,
+  kitchen,
+  workspace,
+  projector,
+  capacity,
+  area_sqm,
+  bathrooms,
 }) => {
-  images = images && images.length
-    ? images.map(img => img.url)
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  const imgs = images && images.length 
+    ? images.map((img) => (typeof img === "string" ? img : img.url))
     : [ImageURL];
 
-  title = title || "Título por defecto";
-  description = description || "Descripción por defecto del espacio.";
-  chips = chips || ["WiFi", "Parking", "Aire acondicionado"];
-  redirection = redirection || "#Details";
-  price = price || (Math.random() * 100).toFixed(0) + "€/noche";
+  const _title = title || "Título por defecto";
+  const _description = description || "Descripción por defecto del espacio.";
+  
+  const _chips = useMemo(() => {
+    const amenities = [];
+    
+    if (wifi) amenities.push(" WiFi");
+    if (parking) amenities.push(" Parking");
+    if (air_conditioning) amenities.push(" A/C");
+    if (kitchen) amenities.push(" Cocina");
+    if (workspace) amenities.push(" Workspace");
+    if (projector) amenities.push(" Proyector");
+    if (capacity) amenities.push(` ${capacity} personas`);
+    if (area_sqm) amenities.push(` ${area_sqm}m`);
+    if (bathrooms) amenities.push(` ${bathrooms} baño${bathrooms > 1 ? 's' : ''}`);
+    
+    return amenities.length > 0 ? amenities : (chips || ["Espacio disponible"]);
+  }, [wifi, parking, air_conditioning, kitchen, workspace, projector, capacity, area_sqm, bathrooms, chips]);
 
-  const carouselId =
-    "carousel-" + title.replace(/\s+/g, "-").toLowerCase() + "-" + Math.floor(Math.random() * 10000);
+  const handleImageLoad = useCallback(() => {
+    setImageLoaded(true);
+  }, []);
+
+  const handleImageError = useCallback(() => {
+    setImageError(true);
+    setImageLoaded(true);
+  }, []);
+
+  const _price = typeof price === "number" ? `${price}€/día` : price || `${(Math.random() * 100).toFixed(0)}€/día`;
+  const _link = redirection || `/detail/${spaceId ?? ""}`;
+
+  const carouselId = "carousel-" + _title.replace(/\s+/g, "-").toLowerCase() + "-" + Math.floor(Math.random() * 10000);
 
   return (
-    <div
-      className="card h-100 position-relative"
-      style={{ width: "18rem", maxWidth: "100%", overflow: "visible" }}
-    >
-      {/* Carrusel */}
+    <div className="card h-100 position-relative" style={{ width: "18rem", maxWidth: "100%", overflow: "visible" }}>
       <div id={carouselId} className="carousel slide" data-bs-ride="carousel">
         <div className="carousel-inner" style={{ maxHeight: "100%", overflow: "hidden" }}>
-          {images.map((image, index) => (
-            <div key={index} className={`carousel-item ${index === 0 ? "active" : ""}`}>
+          {imgs.map((image, idx) => (
+            <div key={idx} className={`carousel-item ${idx === 0 ? "active" : ""}`}>
               <img
-                src={image}
+                src={imageError ? ImageURL : image}
                 className="d-block w-100"
-                style={{ width: "300px", height: "200px", objectFit: "cover" }}
-                alt={`Slide ${index}`}
+                style={{ 
+                  width: "300px", 
+                  height: "200px", 
+                  objectFit: "cover",
+                  transition: "opacity 0.3s ease",
+                  opacity: imageLoaded ? 1 : 0.8,
+                }}
+                alt={`Slide ${idx}`}
+                loading={idx === 0 ? "eager" : "lazy"}
+                onLoad={handleImageLoad}
+                onError={handleImageError}
               />
             </div>
           ))}
         </div>
-        <button className="carousel-control-prev" type="button" data-bs-target={`#${carouselId}`} data-bs-slide="prev">
-          <span className="carousel-control-prev-icon" aria-hidden="true"></span>
-          <span className="visually-hidden">Previous</span>
-        </button>
-        <button className="carousel-control-next" type="button" data-bs-target={`#${carouselId}`} data-bs-slide="next">
-          <span className="carousel-control-next-icon" aria-hidden="true"></span>
-          <span className="visually-hidden">Next</span>
-        </button>
+        
+        {imgs.length > 1 && (
+          <>
+            <button 
+              className="carousel-control-prev" 
+              type="button" 
+              data-bs-target={`#${carouselId}`} 
+              data-bs-slide="prev"
+              style={{
+                background: "rgba(255,255,255,0.8)",
+                borderRadius: "50%",
+                width: "40px",
+                height: "40px",
+                left: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                border: "none",
+                opacity: "0.8"
+              }}
+            >
+              <i className="bi bi-chevron-left text-dark fs-5" aria-hidden="true"></i>
+              <span className="visually-hidden">Previous</span>
+            </button>
+            <button 
+              className="carousel-control-next" 
+              type="button" 
+              data-bs-target={`#${carouselId}`} 
+              data-bs-slide="next"
+              style={{
+                background: "rgba(255,255,255,0.8)",
+                borderRadius: "50%",
+                width: "40px",
+                height: "40px",
+                right: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                border: "none",
+                opacity: "0.8"
+              }}
+            >
+              <i className="bi bi-chevron-right text-dark fs-5" aria-hidden="true"></i>
+              <span className="visually-hidden">Next</span>
+            </button>
+          </>
+        )}
       </div>
 
-      {/* Contenido */}
-      {/* OJO: convertimos el body en columna flex para poder usar mt-auto abajo */}
       <div className="card-body d-flex flex-column">
-        <h5 className="card-title">{title}</h5>
-        <h6 className="card-subtitle mb-2 text-muted">{price}</h6>
+        <h5 className="card-title">{_title}</h5>
+        <h6 className="card-subtitle mb-2 text-muted">{_price}</h6>
+        <p className="card-text line-clamp-3">{_description}</p>
 
-        {/* (Opcional) limita la descripción para que todas las cards tengan altura parecida */}
-        <p className="card-text line-clamp-3">{description}</p>
-
-        <div className="d-flex flex-wrap gap-2 mb-2">
-          {chips.map((chip, index) => (
-            <span key={index} className="badge bg-light text-dark">
+        <div className="d-flex flex-wrap gap-1 mb-2">
+          {_chips.slice(0, 4).map((chip, i) => (
+            <span key={i} className="badge bg-light text-dark border" style={{ fontSize: "0.75rem" }}>
               {chip}
             </span>
           ))}
+          {_chips.length > 4 && (
+            <span className="badge bg-secondary" style={{ fontSize: "0.75rem" }}>
+              +{_chips.length - 4} más
+            </span>
+          )}
         </div>
 
-        {/* Footer de acciones: mt-auto lo pega al fondo, flex-nowrap evita saltos de línea */}
         <div className="mt-auto pt-2 d-flex justify-content-between align-items-start border-top flex-nowrap spacecard-actions">
-          <div className="d-flex gap-2 flex-nowrap">
-            {children /* <ReserveButton /> */}
+          <div className="d-flex gap-2 flex-nowrap">{children}</div>
+
+          <div className="d-flex gap-2">
+            <Link to={_link} className="btn btn-primary btn-sm" style={{ minWidth: 84 }}>
+              Ver más
+            </Link>
           </div>
 
           <div className="d-flex gap-2">
-          <Link to={`/detail/${id}`} className="btn btn-primary btn-sm" style={{ minWidth: 84 }}>
-            Ver más
-          </Link>
+            <FavoriteIcon
+              initiallyActive={initiallyFavorite}
+              onToggleFavorite={onToggleFavorite}
+            />
           </div>
-          <div className="d-flex gap-2">
-            <FavoriteIcon/>
-          </div>
-           
         </div>
       </div>
     </div>
   );
 };
 
-export default SpaceCard;
+export default memo(SpaceCard);

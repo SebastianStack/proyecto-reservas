@@ -17,7 +17,7 @@ import { AddPlace } from "./pages/AddPlace";
 import { Detail } from "./pages/Detail";
 import {ForgotPassword} from "./pages/ForgotPassword"
 import {ResetPassword} from "./pages/ResetPassword"
-
+import AddPost from "./components/AddPost.jsx";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -44,6 +44,7 @@ export const router = createBrowserRouter(
       <Route path="/detail/:id" element={<Detail/>}/>
       <Route path="/forgot-password" element={<ForgotPassword/>}/>
       <Route path="/reset-password/:token" element={<ResetPassword />} />
+      <Route path="/add-post" element={<AddPost />} />
     </Route>
   )
 );

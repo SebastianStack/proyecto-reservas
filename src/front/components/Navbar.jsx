@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router"; // dejo tu import tal cual
+import { Link, useNavigate } from "react-router-dom";
 import logoImage from "../assets/img/logo.png";
 
 export const Navbar = () => {
@@ -11,25 +10,36 @@ export const Navbar = () => {
     navigate("/login");
   }
 
-  // Efecto: eleva el navbar al hacer scroll (solo estilos)
+  // Efecto: mantiene el navbar fijo arriba al hacer scroll
   useEffect(() => {
     const el = document.getElementById("app-navbar");
     if (!el) return;
-    const onScroll = () => {
-      if (window.scrollY > 8) el.classList.add("navbar-elevated");
-      else el.classList.remove("navbar-elevated");
+    el.classList.add("position-fixed", "top-0", "w-100", "shadow-sm");
+    el.style.zIndex = "1050";
+    document.body.style.paddingTop = `${el.offsetHeight}px`;
+    return () => {
+      el.classList.remove("position-fixed", "top-0", "w-100", "shadow-sm");
+      document.body.style.paddingTop = null;
     };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   return (
-    <nav id="app-navbar" className="navbar navbar-expand-lg navbar-light navbar-glass sticky-top">
+    <nav
+      id="app-navbar"
+      className="navbar navbar-expand-lg navbar-light navbar-glass"
+      style={{ background: "#fff" }}
+    >
       <div className="container">
-        {/* Brand */}
+        {/* Solo logo, sin texto WePlaceIt */}
         <Link to="/" className="navbar-brand mb-0 h1 d-flex align-items-center gap-2 brand-hover">
-          <img src={logoImage} alt="Weplaceit Logo" style={{ height: "80px", marginBottom: "-15px", marginTop: "-15px" }} />
+          <img
+            src={logoImage}
+            alt="Weplaceit Logo"
+            style={{
+              height: "69px",         // <-- aumenta el tamaño del logo
+              borderRadius: "12px",
+            }}
+          />
         </Link>
 
         {/* Toggler (móvil) */}
@@ -48,13 +58,6 @@ export const Navbar = () => {
         {/* Links */}
         <div className="collapse navbar-collapse" id="navbarContent">
           <ul className="navbar-nav ms-auto align-items-lg-center gap-2">
-            {/* Mantengo tu código comentado */}
-            {/* <li className="nav-item">
-              <Link to="/about" className="nav-link">
-                Acerca de
-              </Link>
-            </li> */}
-
             {localStorage.getItem("token") ? (
               <>
                 <li className="nav-item">
@@ -62,11 +65,10 @@ export const Navbar = () => {
                     Mi perfil
                   </Link>
                 </li>
-
                 <li className="nav-item">
-                  <Link to="/login" className="btn btn-danger btn-pill ms-lg-2" onClick={logout}>
+                  <button className="btn btn-danger btn-pill ms-lg-2" onClick={logout}>
                     Cerrar sesión
-                  </Link>
+                  </button>
                 </li>
               </>
             ) : (
@@ -76,9 +78,8 @@ export const Navbar = () => {
                     Iniciar sesión
                   </Link>
                 </li>
-
                 <li className="nav-item">
-                  <Link to="/signup" className="btn btn-outline-primary btn-pill">
+                  <Link to="/signup" className="btn btn-outline-primary btn-pill ms-lg-2">
                     Registrarse
                   </Link>
                 </li>

@@ -1,28 +1,35 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import DatePicker from "react-datepicker";
 
 export default function ReserveButton({ spaceId, onBooked }) {
   const navigate = useNavigate();
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
 
   // Utilidades de fecha seguras en local
-  function todayISO() {
-    const now = new Date();
-    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-    return local.toISOString().slice(0, 10);
+  function todayDate() {
+    return new Date();
   }
-  function addDays(isoDate, days) {
-    const dt = new Date(isoDate + "T00:00:00");
-    dt.setDate(dt.getDate() + days);
-    const local = new Date(dt.getTime() - dt.getTimezoneOffset() * 60000);
+  
+  function addDaysToDate(date, days) {
+    const newDate = new Date(date);
+    newDate.setDate(newDate.getDate() + days);
+    return newDate;
+  }
+  
+  function dateToISO(date) {
+    if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+      return null;
+    }
+    const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
     return local.toISOString().slice(0, 10);
   }
 
   // Estado UI
   const [open, setOpen] = useState(false);
-  const [checkIn, setCheckIn] = useState(todayISO());
-  const [checkOut, setCheckOut] = useState(addDays(todayISO(), 1));
+  const [checkIn, setCheckIn] = useState(todayDate());
+  const [checkOut, setCheckOut] = useState(addDaysToDate(todayDate(), 1));
   const [loading, setLoading] = useState(false);
   const [inlineMsg, setInlineMsg] = useState(null);
   const [toastMsg, setToastMsg] = useState(null);
@@ -86,13 +93,21 @@ export default function ReserveButton({ spaceId, onBooked }) {
     if (!checkIn || !checkOut) { setInlineMsg("Selecciona check-in y check-out."); return; }
     if (checkOut <= checkIn) { setInlineMsg("La fecha de salida debe ser posterior a la de entrada."); return; }
 
+    const checkInISO = dateToISO(checkIn);
+    const checkOutISO = dateToISO(checkOut);
+    
+    if (!checkInISO || !checkOutISO) { 
+      setInlineMsg("Fechas inválidas. Por favor selecciona fechas válidas."); 
+      return; 
+    }
+
     setLoading(true);
     try {
       const url = backendUrl + "/api/space/" + String(spaceId) + "/new-booking";
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token },
-        body: JSON.stringify({ check_in: checkIn, check_out: checkOut })
+        body: JSON.stringify({ check_in: checkInISO, check_out: checkOutISO })
       });
 
       if (res.status === 401) throw new Error("No autorizado. Inicia sesión.");
@@ -148,26 +163,39 @@ export default function ReserveButton({ spaceId, onBooked }) {
           <div className="row g-2">
             <div className="col-6">
               <label className="form-label mb-1">Check-in</label>
-              <input
-                type="date"
-                className="form-control form-control-sm"
-                value={checkIn}
-                min={todayISO()}
-                onChange={function (e) {
-                  const v = e.target.value;
-                  setCheckIn(v);
-                  if (v >= checkOut) setCheckOut(addDays(v, 1));
+              <DatePicker
+                selected={checkIn}
+                onChange={(date) => {
+                  setCheckIn(date);
+                  if (date && checkOut && date >= checkOut) {
+                    setCheckOut(addDaysToDate(date, 1));
+                  }
                 }}
+                minDate={new Date()}
+                dateFormat="dd/MM/yyyy"
+                className="form-control form-control-sm"
+                placeholderText="Elige una fecha"
+                showMonthDropdown
+                showYearDropdown
+                dropdownMode="select"
+                todayButton="Hoy"
+                popperPlacement="bottom"
               />
             </div>
             <div className="col-6">
               <label className="form-label mb-1">Check-out</label>
-              <input
-                type="date"
+              <DatePicker
+                selected={checkOut}
+                onChange={(date) => setCheckOut(date)}
+                minDate={checkIn ? addDaysToDate(checkIn, 1) : addDaysToDate(new Date(), 1)}
+                dateFormat="dd/MM/yyyy"
                 className="form-control form-control-sm"
-                value={checkOut}
-                min={addDays(checkIn, 1)}
-                onChange={function (e) { setCheckOut(e.target.value); }}
+                placeholderText="Elige una fecha"
+                showMonthDropdown
+                showYearDropdown
+                dropdownMode="select"
+                todayButton="Hoy"
+                popperPlacement="bottom"
               />
             </div>
           </div>

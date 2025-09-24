@@ -105,6 +105,21 @@ class Space(db.Model):
     description:   Mapped[str]      = mapped_column( Text,                                nullable=True)
     price_per_day: Mapped[Decimal]  = mapped_column( DECIMAL(10, 2),                      nullable=False)
     capacity:      Mapped[int]      = mapped_column( Integer,                             nullable=False)
+    
+    # Amenidades - nuevos campos
+    wifi:          Mapped[bool]     = mapped_column( Boolean,       default=False,        nullable=False)
+    parking:       Mapped[bool]     = mapped_column( Boolean,       default=False,        nullable=False)
+    air_conditioning: Mapped[bool]  = mapped_column( Boolean,       default=False,        nullable=False)
+    kitchen:       Mapped[bool]     = mapped_column( Boolean,       default=False,        nullable=False)
+    workspace:     Mapped[bool]     = mapped_column( Boolean,       default=False,        nullable=False)
+    projector:     Mapped[bool]     = mapped_column( Boolean,       default=False,        nullable=False)
+    
+    # Información adicional
+    area_sqm:      Mapped[int]      = mapped_column( Integer,                             nullable=True)  # Área en metros cuadrados
+    floor:         Mapped[int]      = mapped_column( Integer,                             nullable=True)  # Piso
+    bathrooms:     Mapped[int]      = mapped_column( Integer,       default=1,            nullable=False)
+    available_hours: Mapped[str]    = mapped_column( String(100),   default="24/7",       nullable=True)  # Ej: "9:00-18:00"
+    
     created_at:    Mapped[datetime] = mapped_column( DateTime,      default=func.now(),   nullable=False)
     updated_at:    Mapped[datetime] = mapped_column( DateTime,      default=func.now(),   nullable=False,  onupdate=func.now())
 
@@ -156,6 +171,21 @@ class Space(db.Model):
             "description":   self.description,
             "price_per_day": float(self.price_per_day),
             "capacity":      self.capacity,
+            
+            # Amenidades
+            "wifi":          self.wifi,
+            "parking":       self.parking,
+            "air_conditioning": self.air_conditioning,
+            "kitchen":       self.kitchen,
+            "workspace":     self.workspace,
+            "projector":     self.projector,
+            
+            # Información adicional
+            "area_sqm":      self.area_sqm,
+            "floor":         self.floor,
+            "bathrooms":     self.bathrooms,
+            "available_hours": self.available_hours,
+            
             "images": [image.serialize() for image in self.images],
             "favorites": [fav.serialize() for fav in self.favorited_by]
         }

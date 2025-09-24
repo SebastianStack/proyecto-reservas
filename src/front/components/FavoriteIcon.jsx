@@ -1,25 +1,48 @@
-{/* <i class="fa-solid fa-bookmark"></i>
-<i class="fa-regular fa-bookmark"></i> */}
+// src/components/FavoriteIcon.jsx
+import React, { useState, useEffect } from "react";
 
-import React, { useState } from 'react';
+export default function FavoriteIcon({
+  initiallyActive = false,
+  onToggleFavorite,           // (next: boolean) => Promise<void>
+  className = "",
+}) {
+  const [active, setActive] = useState(initiallyActive);
+  const [busy, setBusy] = useState(false);
 
-export const FavoriteIcon = ({ itemId, onAddFavorite, onRemoveFavorite }) => {
-  const [isFavorite, setIsFavorite] = useState(false);
+  // si el padre cambia el valor inicial (p.ej. recarga de favoritos)
+  useEffect(() => {
+    setActive(initiallyActive);
+  }, [initiallyActive]);
 
-  const toggleFavorite = () => {
-    if (isFavorite) {
-      onRemoveFavorite(itemId);
-    } else {
-      onAddFavorite(itemId);
+  async function toggleFavorite() {
+    if (busy) return;
+    const next = !active;
+
+    // optimista
+    setActive(next);
+    setBusy(true);
+    try {
+      await onToggleFavorite?.(next);
+    } catch (e) {
+      // revertir si falla
+      setActive(!next);
+      console.error("Favorite error:", e?.message || e);
+      alert(e?.message || "No se pudo actualizar favoritos.");
+    } finally {
+      setBusy(false);
     }
-    setIsFavorite(!isFavorite);
-  };
+  }
 
   return (
-    <i
-      className={`fa-${isFavorite ? 'solid' : 'regular'} fa-bookmark m-1`}
-      style={{ cursor: 'pointer', fontSize: '1.5rem', color: isFavorite ? '#007bff' : '#6c757d' }}
+    <button
+      type="button"
       onClick={toggleFavorite}
-    ></i>
+      disabled={busy}
+      className={`btn btn-sm ${active ? "btn-danger" : "btn-outline-danger"} ${className}`}
+      title={active ? "Quitar de favoritos" : "Añadir a favoritos"}
+      aria-pressed={active}
+    >
+      <i className={active ? "bi bi-heart-fill" : "bi bi-heart"} />
+    </button>
   );
-};
+}

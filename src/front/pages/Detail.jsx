@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
-import { DetailComponent } from "../components/DetailComponent";
+import DetailComponentPro from "../components/DetailComponent.jsx";
 
 export const Detail = () => {
 
@@ -31,7 +31,7 @@ export const Detail = () => {
     
     return (
         <>
-        <DetailComponent{...space}/>
+        <DetailComponentPro{...space}/>
         </>
     )
 }
