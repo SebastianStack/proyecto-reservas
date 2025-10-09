@@ -4,7 +4,7 @@
 
 WePlace es una plataforma web completa para la reserva de espacios de trabajo y eventos. La aplicación permite a los usuarios buscar, filtrar y reservar espacios, mientras que los propietarios pueden gestionar sus propiedades y reservas en tiempo real.
 
-🌐 **Demo en vivo:** [https://proyecto-reservas-lozronrender.com](https://proyecto-reservas-lozronrender.com)
+🌐 **Demo en vivo:** [https://proyecto-reservas-lozr.onrender.com](https://proyecto-reservas-lozr.onrender.com)
 
 ## 📋 Características
 
